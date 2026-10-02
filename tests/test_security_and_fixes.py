@@ -139,7 +139,6 @@ def test_token_cache_results_are_consistent() -> None:
 
 def _make_api_handler(pipeline: RAGPipeline, api_key: str | None = None):
     """Return a bound RAGHandler class with the pipeline and an optional API key injected."""
-    import os
 
     import ragpipe.api as api_module
     from ragpipe.api import RAGHandler
@@ -157,7 +156,6 @@ def _fake_request(handler_cls, method: str, path: str, body: bytes = b"",
                   headers: dict | None = None):
     """Exercise the handler's do_GET / do_POST without a real socket."""
     import io
-    from http.server import BaseHTTPRequestHandler
 
     class _FakeSocket:
         def __init__(self): self._data = b""
@@ -205,6 +203,7 @@ def _fake_request(handler_cls, method: str, path: str, body: bytes = b"",
 
 def test_api_rejects_request_without_key_when_auth_enabled() -> None:
     from unittest.mock import patch
+
     from ragpipe.api import _check_auth
 
     with patch("ragpipe.api._API_KEY", "secret-key-abc"):
@@ -217,6 +216,7 @@ def test_api_rejects_request_without_key_when_auth_enabled() -> None:
 
 def test_api_allows_request_with_correct_key() -> None:
     from unittest.mock import patch
+
     from ragpipe.api import _check_auth
 
     with patch("ragpipe.api._API_KEY", "my-secret"):
@@ -244,7 +244,7 @@ def test_api_allows_all_when_no_key_configured() -> None:
 
 def test_path_injection_guard_blocks_traversal() -> None:
     import os
-    import ragpipe.api as api_module
+
     from ragpipe.api import _safe_ingest_path
 
     original_root = os.environ.get("RAG_INGEST_ROOT")
@@ -264,7 +264,7 @@ def test_path_injection_guard_blocks_traversal() -> None:
 
 def test_path_injection_guard_allows_safe_path() -> None:
     import os
-    import ragpipe.api as api_module
+
     from ragpipe.api import _safe_ingest_path
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -289,8 +289,8 @@ def test_path_injection_guard_allows_safe_path() -> None:
 
 def test_rate_limiter_allows_burst_then_rejects() -> None:
     """After draining the burst, the next request must be rejected."""
-    from ragpipe.api import _TokenBucket
     import ragpipe.api as api_module
+    from ragpipe.api import _TokenBucket
 
     original_burst = api_module._BURST
     original_rps = api_module._RPS

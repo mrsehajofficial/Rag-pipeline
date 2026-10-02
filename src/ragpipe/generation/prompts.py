@@ -4,8 +4,8 @@ diffable, and testable without an API key.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Sequence
+from collections.abc import Sequence
+from dataclasses import dataclass
 
 SYSTEM_PROMPT = """You are a precise retrieval-augmented assistant.
 

@@ -2,4 +2,4 @@
 
 from .vector_store import HAS_NUMPY, VectorStore
 
-__all__ = ["VectorStore", "HAS_NUMPY"]
+__all__ = ["HAS_NUMPY", "VectorStore"]

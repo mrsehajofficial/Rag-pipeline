@@ -10,17 +10,15 @@ Latency strategy, in order of impact:
 
 from __future__ import annotations
 
-import json
 import math
-import os
 import re
 import sqlite3
 import struct
 import threading
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from .cache import LRUCache, stable_hash
 from .config import EmbeddingConfig
@@ -32,11 +30,7 @@ Vector = tuple[float, ...]
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 _STOPWORDS = frozenset(
-    """a an the and or but if then else of to in on at by for with about against between into
-    through during before after above below from up down out off over under again further once
-    here there all any both each few more most other some such no nor not only own same so than
-    too very can will just should now is are was were be been being have has had do does did
-    this that these those it its as i you he she they we what which who whom""".split()
+    ["a", "an", "the", "and", "or", "but", "if", "then", "else", "of", "to", "in", "on", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "from", "up", "down", "out", "off", "over", "under", "again", "further", "once", "here", "there", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "can", "will", "just", "should", "now", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "this", "that", "these", "those", "it", "its", "as", "i", "you", "he", "she", "they", "we", "what", "which", "who", "whom"]
 )
 
 
@@ -93,7 +87,8 @@ class HashingEmbedder(EmbeddingProvider):
                 for i in range(len(padded) - 2):
                     yield padded[i : i + 3], 0.35
             # Bigrams preserve word order, which catches "not approved" vs "approved".
-            for a, b in zip(tokens, tokens[1:]):
+            from itertools import pairwise
+            for a, b in pairwise(tokens):
                 yield f"{a}_{b}", 0.6
 
     def embed_batch(self, texts: Sequence[str]) -> list[Vector]:
@@ -217,7 +212,7 @@ class OpenAIEmbedder(EmbeddingProvider):
                 )
                 data = sorted(resp.data, key=lambda d: d.index)
                 return [tuple(d.embedding) for d in data]
-            except Exception as exc:  # noqa: BLE001 - classified immediately below
+            except Exception as exc:
                 last_err = exc
                 if not is_transient(exc):
                     # 404/401/400 will never succeed. Say why, once, and stop.
@@ -434,7 +429,6 @@ class Embedder:
         if self._use_disk and pending_idx:
             wanted = {keys[i]: i for i in pending_idx}
             found = self._disk.get_many(self._model_key, list(wanted))
-            still: list[int] = []
             for key, vec in found.items():
                 out[wanted[key]] = vec
                 self._lru.put(key, vec)

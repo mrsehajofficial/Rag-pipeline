@@ -16,9 +16,9 @@ from ragpipe.cache import LRUCache, stable_hash
 from ragpipe.config import ChunkingConfig, RetrievalConfig
 from ragpipe.evaluation import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank
 from ragpipe.ingest.chunker import Chunker, estimate_tokens
-from ragpipe.ingest.loaders import Document, Loader
+from ragpipe.ingest.loaders import Loader
 from ragpipe.retrieval.bm25 import BM25Index
-from ragpipe.retrieval.fusion import Reranker, SearchHit, reciprocal_rank_fusion
+from ragpipe.retrieval.fusion import Reranker, reciprocal_rank_fusion
 
 
 def test_lru_evicts_least_recently_used() -> None:

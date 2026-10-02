@@ -10,7 +10,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
+from typing import ClassVar
 
 from ..observability import get_logger
 
@@ -68,7 +68,7 @@ class Loader:
     """Dispatch to the right loader by file extension. Returns a list of Documents
     because some formats are inherently multi-document (JSONL, notebooks)."""
 
-    EXTENSIONS = {".txt", ".md", ".markdown", ".rst", ".html", ".htm", ".json", ".jsonl", ".csv", ".py"}
+    EXTENSIONS: ClassVar[set[str]] = {".txt", ".md", ".markdown", ".rst", ".html", ".htm", ".json", ".jsonl", ".csv", ".py"}
 
     def load(self, path: str | Path) -> list[Document]:
         p = Path(path)
@@ -127,9 +127,9 @@ class Loader:
 
     def _html(self, p: Path) -> Document:
         html = _read_text(p)
-        title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S)
+        title_match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
         title = re.sub(r"\s+", " ", title_match.group(1)).strip() if title_match else p.stem
-        body = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", html, flags=re.I | re.S)
+        body = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", html, flags=re.IGNORECASE | re.DOTALL)
         body = re.sub(r"<[^>]+>", " ", body)
         body = re.sub(r"&nbsp;?", " ", body)
         body = re.sub(r"&amp;", "&", body)

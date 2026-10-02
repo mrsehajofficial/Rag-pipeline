@@ -41,8 +41,9 @@ from __future__ import annotations
 import json
 import os
 import time
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from .observability import get_logger
@@ -55,7 +56,7 @@ log = get_logger("ragpipe.wsgi")
 # ---------------------------------------------------------------------------
 
 MAX_BODY_BYTES = 1_000_000  # refuse oversized bodies; an unbounded read is a free DoS
-_MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", 2000))
+_MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", "2000"))
 
 # ---------------------------------------------------------------------------
 # API key auth
@@ -267,7 +268,7 @@ def create_app(pipeline: RAGPipeline) -> Callable:
             result = response.to_dict()
             result["server_ms"] = round((time.perf_counter() - started) * 1000, 2)
             return _send_json(start_response, 200, result)
-        except Exception as exc:  # noqa: BLE001 - never leak a traceback to a client
+        except Exception as exc:
             log.exception("query failed")
             return _send_json(start_response, 500, {"error": str(exc)})
 
@@ -291,7 +292,7 @@ def create_app(pipeline: RAGPipeline) -> Callable:
             stats = pipeline.index_path(safe, recursive=payload.get("recursive", True))
             pipeline.save()
             return _send_json(start_response, 200, stats)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             log.exception("ingest failed")
             return _send_json(start_response, 500, {"error": str(exc)})
 
@@ -340,7 +341,7 @@ def create_app(pipeline: RAGPipeline) -> Callable:
                     return _send_json(start_response, 404, {"error": "not found"})
             else:
                 return _send_json(start_response, 405, {"error": "method not allowed"})
-        except Exception as exc:  # noqa: BLE001 - catch-all for unexpected errors
+        except Exception as exc:
             log.exception("unhandled error: %s %s", method, path)
             return _send_json(start_response, 500, {"error": str(exc)})
 

@@ -10,13 +10,16 @@ The bar is `related > unrelated` plus a margin, not an absolute cosine: absolute
 similarity depends on phrasing and carries no information about ranking correctness.
 """
 
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
-from ragpipe.embedding import HashingEmbedder  # noqa: E402
-from ragpipe.embedding_local import LocalOnnxEmbedder  # noqa: E402
+from ragpipe.embedding import HashingEmbedder
+from ragpipe.embedding_local import LocalOnnxEmbedder
 
 # (label, query, related, unrelated)
 CASES = [
@@ -47,35 +50,97 @@ CASES = [
 ]
 
 
-def cos(a, b):
+def _cos(a, b):
     return sum(x * y for x, y in zip(a, b))
 
 
-def run(name, embedder, margin=0.05):
-    print(f"--- {name} (dims={embedder.dimensions}) ---")
+def _check_cases(embedder, margin: float = 0.05) -> int:
+    """Run all cases against an embedder. Returns the number passed."""
     passed = 0
     for label, query, related, unrelated in CASES:
         qv, rv, uv = embedder.embed_many([query, related, unrelated])
-        cr, cu = cos(qv, rv), cos(qv, uv)
-        # Ranking correctness is the only thing that matters for retrieval.
+        cr, cu = _cos(qv, rv), _cos(qv, uv)
         ok = cr > cu and (cr - cu) >= margin
         passed += ok
-        print(
-            f"  {label:10} related={cr:+.3f}  unrelated={cu:+.3f}  "
-            f"margin={cr - cu:+.3f}  {'PASS' if ok else 'FAIL'}"
-        )
-    print(f"  {passed}/{len(CASES)}\n")
     return passed
 
 
-if __name__ == "__main__":
-    title = sys.argv[1] if len(sys.argv) > 1 else "embedder"
-    print(f"\n=== {title} ===\n")
-    try:
-        run("local ONNX (all-MiniLM-L6-v2)", LocalOnnxEmbedder())
-    except RuntimeError as exc:
-        print(f"local unavailable: {exc}\n")
+# ---------------------------------------------------------------------------
+# Hashing embedder (always available, deterministic)
+# ---------------------------------------------------------------------------
 
-    # Contrast only: hashing matches words, not meaning, so it is expected to score
-    # lower here. That gap is the reason the local provider exists.
-    run("hashing (lexical, not semantic)", HashingEmbedder(256))
+
+def test_hashing_embedder_rollback_case() -> None:
+    embedder = HashingEmbedder(256)
+    label, query, related, unrelated = CASES[0]
+    qv, rv, uv = embedder.embed_many([query, related, unrelated])
+    assert _cos(qv, rv) > _cos(qv, uv), f"{label}: related should score higher than unrelated"
+
+
+def test_hashing_embedder_crash_case() -> None:
+    embedder = HashingEmbedder(256)
+    label, query, related, unrelated = CASES[1]
+    qv, rv, uv = embedder.embed_many([query, related, unrelated])
+    assert _cos(qv, rv) > _cos(qv, uv), f"{label}: related should score higher than unrelated"
+
+
+def test_hashing_embedder_tokens_case() -> None:
+    embedder = HashingEmbedder(256)
+    label, query, related, unrelated = CASES[2]
+    qv, rv, uv = embedder.embed_many([query, related, unrelated])
+    assert _cos(qv, rv) > _cos(qv, uv), f"{label}: related should score higher than unrelated"
+
+
+def test_hashing_embedder_synonym_case() -> None:
+    embedder = HashingEmbedder(256)
+    label, query, related, unrelated = CASES[3]
+    qv, rv, uv = embedder.embed_many([query, related, unrelated])
+    assert _cos(qv, rv) > _cos(qv, uv), f"{label}: related should score higher than unrelated"
+
+
+def test_hashing_embedder_all_cases_pass() -> None:
+    """All 4 cases must pass with the hashing embedder."""
+    embedder = HashingEmbedder(256)
+    passed = _check_cases(embedder)
+    assert passed == len(CASES), f"expected {len(CASES)}/{len(CASES)} cases to pass, got {passed}"
+
+
+# ---------------------------------------------------------------------------
+# Local ONNX embedder (skipped if onnxruntime not installed)
+# ---------------------------------------------------------------------------
+
+
+def test_local_onnx_embedder_all_cases_pass() -> None:
+    """All 4 cases must pass with the local ONNX embedder (if available)."""
+    try:
+        embedder = LocalOnnxEmbedder()
+    except (RuntimeError, ImportError) as exc:
+        print(f"  SKIP test_local_onnx_embedder_all_cases_pass (local unavailable: {exc})")
+        return
+    passed = _check_cases(embedder)
+    assert passed == len(CASES), f"expected {len(CASES)}/{len(CASES)} cases to pass, got {passed}"
+
+
+# ---------------------------------------------------------------------------
+# Runner
+# ---------------------------------------------------------------------------
+
+
+def _run_all() -> int:
+    tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
+    failures = []
+    for name, fn in tests:
+        try:
+            fn()
+            print(f"  PASS {name}")
+        except Exception as exc:  # noqa: BLE001
+            failures.append((name, exc))
+            import traceback
+            print(f"  FAIL {name}: {type(exc).__name__}: {exc}")
+            traceback.print_exc()
+    print(f"\n{len(tests) - len(failures)}/{len(tests)} passed")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_run_all())

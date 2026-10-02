@@ -12,8 +12,8 @@ Design notes that matter in production:
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from ..cache import stable_hash
 from ..config import ChunkingConfig
@@ -174,7 +174,7 @@ class Chunker:
             if overlap_chars > 0 and results:
                 merged: list[tuple[str, int]] = [results[0]]
                 for i in range(1, len(results)):
-                    prev_text, prev_start = results[i - 1]
+                    prev_text, _prev_start = results[i - 1]
                     tail = prev_text[-overlap_chars:]
                     text_i, start_i = results[i]
                     merged.append((tail + text_i, start_i - len(tail)))

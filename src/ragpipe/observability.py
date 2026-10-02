@@ -12,9 +12,10 @@ import sys
 import threading
 import time
 import uuid
+from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field, asdict
-from typing import Any, Iterator
+from dataclasses import dataclass, field
+from typing import Any
 
 _LOG_CONFIGURED = False
 _LOCK = threading.Lock()
@@ -66,7 +67,7 @@ class Span:
     duration_ms: float = 0.0
     meta: dict[str, Any] = field(default_factory=dict)
 
-    def finish(self) -> "Span":
+    def finish(self) -> Span:
         self.duration_ms = (time.perf_counter() - self.started) * 1000.0
         return self
 

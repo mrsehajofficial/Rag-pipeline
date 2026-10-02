@@ -46,7 +46,7 @@ from .pipeline import RAGPipeline
 log = get_logger("ragpipe.api")
 
 MAX_BODY_BYTES = 1_000_000  # refuse oversized bodies; an unbounded read is a free DoS
-_MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", 2000))
+_MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", "2000"))
 
 # ---------------------------------------------------------------------------
 # API key auth
@@ -103,14 +103,14 @@ def _safe_ingest_path(raw_path: str) -> Path:
 # ---------------------------------------------------------------------------
 # Token-bucket rate limiter (per source IP)
 # ---------------------------------------------------------------------------
-_RPS = float(os.environ.get("RAG_RATE_LIMIT_RPS", 10))
-_BURST = int(os.environ.get("RAG_RATE_LIMIT_BURST", 20))
+_RPS = float(os.environ.get("RAG_RATE_LIMIT_RPS", "10"))
+_BURST = int(os.environ.get("RAG_RATE_LIMIT_BURST", "20"))
 
 
 class _TokenBucket:
     """Thread-safe token bucket for a single client."""
 
-    __slots__ = ("tokens", "last", "_lock")
+    __slots__ = ("_lock", "last", "tokens")
 
     def __init__(self) -> None:
         self.tokens: float = _BURST
@@ -194,7 +194,7 @@ class RAGHandler(BaseHTTPRequestHandler):
             return True
         return False
 
-    def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
+    def do_GET(self) -> None:
         parsed_path = urlparse(self.path).path
         # Health endpoint must be unauthenticated: Docker HEALTHCHECK, Kubernetes
         # probes, and load balancer health checks all send no Authorization header.
@@ -282,7 +282,7 @@ class RAGHandler(BaseHTTPRequestHandler):
             log.warning("health check: embedding provider unavailable: %s", exc)
             self._send(503, {"status": "degraded", "error": str(exc)})
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         if not self._authed():
             return
         if self._rate_limited():
@@ -303,7 +303,7 @@ class RAGHandler(BaseHTTPRequestHandler):
                 self._handle_ingest(payload)
             else:
                 self._send(404, {"error": "not found"})
-        except Exception as exc:  # noqa: BLE001 - never leak a traceback to a client
+        except Exception as exc:
             log.exception("request failed: %s %s", self.command, self.path)
             self._send(500, {"error": str(exc)})
 

@@ -7,7 +7,7 @@ through instead. That makes tests deterministic and swapping prod/dev configs tr
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 

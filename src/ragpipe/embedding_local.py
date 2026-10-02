@@ -15,8 +15,8 @@ from __future__ import annotations
 
 import os
 import threading
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from .embedding import EmbeddingProvider
 from .observability import get_logger
@@ -100,7 +100,7 @@ def _resolve_model_path(repo: str, cache_dir: str) -> str:
         for candidate in _onnx_candidates():
             try:
                 return hf_hub_download(repo_id=repo, filename=candidate, cache_dir=cache_dir)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S112
                 continue
 
     return hf_hub_download(repo_id=repo, filename="onnx/model.onnx", cache_dir=cache_dir)
@@ -123,8 +123,6 @@ class LocalOnnxEmbedder(EmbeddingProvider):
         max_length: int = 256,
     ) -> None:
         _require_deps()
-        import onnxruntime
-        from tokenizers import Tokenizer
 
         self.model = model
         self.repo, self._expected_dim = KNOWN_MODELS.get(model, (f"sentence-transformers/{model}", 384))
@@ -145,7 +143,9 @@ class LocalOnnxEmbedder(EmbeddingProvider):
             if self._session is not None:
                 return
             import onnxruntime
-            from huggingface_hub import hf_hub_download  # noqa: F401  (import checked below)
+            from huggingface_hub import (
+                hf_hub_download,
+            )
             from tokenizers import Tokenizer
 
             self._cache_dir.mkdir(parents=True, exist_ok=True)

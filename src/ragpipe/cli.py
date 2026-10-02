@@ -77,6 +77,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     # Falls back to the stdlib dev server for zero-dependency local use.
     try:
         import gunicorn  # noqa: F401
+
         from .wsgi import create_app
 
         pipeline = _build(args)

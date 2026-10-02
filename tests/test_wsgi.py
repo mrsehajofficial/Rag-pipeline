@@ -103,7 +103,7 @@ def test_wsgi_health_returns_503_when_embedder_fails() -> None:
         original_embed = pipe.embedder.embed_one
         pipe.embedder.embed_one = lambda text: (_ for _ in ()).throw(RuntimeError("provider down"))
         try:
-            status, headers, body = _call_app(app, "GET", "/health")
+            status, _headers, body = _call_app(app, "GET", "/health")
             assert status == 503, f"expected 503, got {status}"
             data = json.loads(body)
             assert data["status"] == "degraded"
@@ -123,7 +123,7 @@ def test_wsgi_stats_returns_200() -> None:
         pipe.index_path(DOCS)
         app = create_app(pipe)
 
-        status, headers, body = _call_app(app, "GET", "/stats")
+        status, _headers, body = _call_app(app, "GET", "/stats")
         assert status == 200, f"expected 200, got {status}"
         data = json.loads(body)
         assert "chunks" in data
@@ -166,7 +166,7 @@ def test_wsgi_query_returns_answer() -> None:
         app = create_app(pipe)
 
         body = json.dumps({"question": "what causes the export worker to crash?"}).encode()
-        status, headers, resp_body = _call_app(app, "POST", "/query", body)
+        status, _headers, resp_body = _call_app(app, "POST", "/query", body)
         assert status == 200, f"expected 200, got {status}"
         data = json.loads(resp_body)
         assert data["answer"]
@@ -216,7 +216,6 @@ def test_wsgi_query_rejects_bad_json() -> None:
 
 def test_wsgi_unauthenticated_request_rejected_when_key_set() -> None:
     """When RAG_API_KEY is set, requests without the key must return 401."""
-    import os
     import ragpipe.wsgi as wsgi_module
 
     original_key = wsgi_module._API_KEY
@@ -245,7 +244,7 @@ def test_wsgi_unauthenticated_request_rejected_when_key_set() -> None:
 
 def test_wsgi_authenticated_request_accepted() -> None:
     """When RAG_API_KEY is set, requests with the correct key must succeed."""
-    import os
+
     import ragpipe.wsgi as wsgi_module
 
     original_key = wsgi_module._API_KEY
@@ -257,7 +256,7 @@ def test_wsgi_authenticated_request_accepted() -> None:
             app = create_app(pipe)
 
             headers = {"Authorization": "Bearer test-secret-key"}
-            status, _, body = _call_app(app, "GET", "/stats", headers=headers)
+            status, _headers, _body = _call_app(app, "GET", "/stats", headers=headers)
             assert status == 200, f"expected 200, got {status}"
     finally:
         wsgi_module._API_KEY = original_key

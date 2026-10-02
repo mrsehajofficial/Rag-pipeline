@@ -8,19 +8,17 @@ when the API key is missing or the API is down.
 
 from __future__ import annotations
 
-import os
 import re
 import sqlite3
 import threading
 from abc import ABC, abstractmethod
+from collections.abc import Iterator, Sequence
 from pathlib import Path
-from typing import Iterator, Sequence
 
 from ..cache import LRUCache, stable_hash
 from ..config import CacheConfig, GenerationConfig
 from ..embedding import tokenize
 from ..observability import get_logger
-from .prompts import PromptBuilder
 
 log = get_logger("ragpipe.generate")
 
@@ -71,7 +69,7 @@ class OpenAIClient(LLMClient):
                     max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
                 )
                 return resp.choices[0].message.content or ""
-            except Exception as exc:  # noqa: BLE001 - classified immediately below
+            except Exception as exc:
                 last_err = exc
                 if not is_transient(exc):
                     # A 404 or 401 will not fix itself; retrying just delays the message.
@@ -243,7 +241,7 @@ class CachedLLM(LLMClient):
             con.execute(
                 "DELETE FROM llm_cache WHERE key IN ("
                 " SELECT key FROM llm_cache ORDER BY hits ASC, rowid ASC"
-                f" LIMIT MAX(0, (SELECT COUNT(*) FROM llm_cache) - ?))",
+                " LIMIT MAX(0, (SELECT COUNT(*) FROM llm_cache) - ?))",
                 (self.config.max_entries,),
             )
 

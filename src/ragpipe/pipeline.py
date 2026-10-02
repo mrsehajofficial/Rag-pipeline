@@ -17,10 +17,10 @@ from __future__ import annotations
 
 import os
 import threading
+from collections.abc import Iterator, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, Sequence
 
 from .cache import LRUCache
 from .config import Settings, load_settings
@@ -43,7 +43,7 @@ from .store.vector_store import VectorStore
 log = get_logger("ragpipe.pipeline")
 
 NO_ANSWER = "I don't have that in the indexed sources."
-MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", 2000))
+MAX_QUERY_CHARS = int(os.environ.get("RAG_MAX_QUERY_CHARS", "2000"))
 
 
 @dataclass(slots=True)
@@ -368,8 +368,7 @@ class RAGPipeline:
         # mid-stream (which causes GeneratorExit, bypassing normal flow).
         try:
             with trace.span("generate"):
-                for piece in self.llm.stream(messages):
-                    yield piece
+                yield from self.llm.stream(messages)
         finally:
             confident = bool(hits)
             trace.meta.update({"hits": len(hits), "confident": confident})

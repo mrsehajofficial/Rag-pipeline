@@ -13,7 +13,7 @@ from __future__ import annotations
 import math
 import threading
 from collections import Counter, defaultdict
-from typing import Iterable, Sequence
+from collections.abc import Sequence
 
 from ..embedding import tokenize
 from ..ingest.chunker import Chunk

@@ -15,9 +15,9 @@ from __future__ import annotations
 import json
 import threading
 from array import array
+from collections.abc import Iterable, Sequence
 from operator import mul
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from ..cache import stable_hash
 from ..config import VectorStoreConfig
@@ -182,7 +182,6 @@ class VectorStore:
         return len(self._ids)
 
     def _numpy_matrix(self):
-        global _np
         if _np is None:  # pragma: no cover
             raise RuntimeError("numpy unavailable")
         if self._np_dirty or self._np_matrix is None:

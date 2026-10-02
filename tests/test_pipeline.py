@@ -4,7 +4,6 @@ so these are deterministic and free. Run directly or under pytest.
 
 from __future__ import annotations
 
-import shutil
 import sys
 import tempfile
 from pathlib import Path

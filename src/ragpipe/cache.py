@@ -8,10 +8,10 @@ linked list one used when many threads hammer the same key.
 from __future__ import annotations
 
 import hashlib
-import json
 import threading
 from collections import OrderedDict
-from typing import Any, Callable, Generic, TypeVar
+from collections.abc import Callable
+from typing import Any, Generic, TypeVar
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -22,7 +22,7 @@ class LRUCache(Generic[K, V]):
         if max_size <= 0:
             raise ValueError("max_size must be positive")
         self.max_size = max_size
-        self._data: "OrderedDict[K, V]" = OrderedDict()
+        self._data: OrderedDict[K, V] = OrderedDict()
         self._lock = threading.RLock()
         self.hits = 0
         self.misses = 0

@@ -47,8 +47,8 @@ def _wait_for_port(port: int, timeout: float = 15.0) -> bool:
 
 def _http_get(port: int, path: str) -> tuple[int, dict]:
     """Make a simple HTTP GET request and return (status, body_dict)."""
-    import urllib.request
     import urllib.error
+    import urllib.request
 
     url = f"http://127.0.0.1:{port}{path}"
     try:
@@ -166,8 +166,8 @@ def test_gunicorn_query_endpoint() -> None:
         try:
             assert _wait_for_port(port), f"gunicorn did not start within 15s on port {port}"
 
-            import urllib.request
             import urllib.error
+            import urllib.request
 
             url = f"http://127.0.0.1:{port}/query"
             data = json.dumps({"question": "what causes the export worker to crash?"}).encode()

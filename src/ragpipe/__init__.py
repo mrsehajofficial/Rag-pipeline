@@ -17,6 +17,6 @@ __all__ = [
     "RAGPipeline",
     "RAGResponse",
     "Settings",
-    "load_settings",
     "__version__",
+    "load_settings",
 ]

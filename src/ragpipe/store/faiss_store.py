@@ -17,9 +17,8 @@ from __future__ import annotations
 
 import json
 import threading
-from array import array
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from ..cache import stable_hash
 from ..config import VectorStoreConfig
@@ -31,8 +30,8 @@ log = get_logger("ragpipe.store.faiss")
 Vector = tuple[float, ...]
 
 try:
-    import numpy as _np
     import faiss
+    import numpy as _np
 
     HAS_FAISS = True
 except ImportError:

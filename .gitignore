@@ -6,6 +6,9 @@ data/index/
 data/*.db
 data/traces.jsonl
 .pytest_cache/
+.coverage
+coverage.xml
+.ruff_cache/
 
 # Secrets — NEVER commit the real env file
 .env
