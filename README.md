@@ -216,7 +216,7 @@ unset RAG_EMBED_DIM RAG_EMBED_MODEL    # ignored by the local provider
 export RAG_LLM_PROVIDER=openai         # chat still goes to your gateway
 export RAG_LLM_MODEL=gemini-3.8-flash
 export OPENAI_API_KEY="..."
-export OPENAI_BASE_URL="https://morrowtest.wasmer.app/v1"
+export OPENAI_BASE_URL="https://your-gateway.example.com/v1"
 
 python3 run.py doctor
 python3 run.py ingest data/docs

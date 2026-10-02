@@ -69,8 +69,8 @@ cat > .env <<'EOF'
 export RAG_EMBED_PROVIDER=local
 export RAG_LLM_PROVIDER=openai
 export RAG_LLM_MODEL=gemini-3.8-flash
-export OPENAI_API_KEY="Morrow"
-export OPENAI_BASE_URL="https://morrowtest.wasmer.app/v1"
+export OPENAI_API_KEY="your-api-key-here"
+export OPENAI_BASE_URL="https://your-gateway.example.com/v1"
 EOF
 
 echo 'source .env' >> ~/.zshrc     # or ~/.bashrc
@@ -348,8 +348,8 @@ pip install -r requirements.txt        # local embeddings + gateway + numpy
 export RAG_EMBED_PROVIDER=local        # no gateway needed for embeddings
 export RAG_LLM_PROVIDER=openai
 export RAG_LLM_MODEL=gemini-3.8-flash
-export OPENAI_API_KEY="Morrow"
-export OPENAI_BASE_URL="https://morrowtest.wasmer.app/v1"
+export OPENAI_API_KEY="your-api-key-here"
+export OPENAI_BASE_URL="https://your-gateway.example.com/v1"
 
 python3 run.py doctor
 python3 run.py ingest data/docs
