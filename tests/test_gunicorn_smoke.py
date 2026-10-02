@@ -82,7 +82,9 @@ def test_gunicorn_health_endpoint() -> None:
 
         settings = load_settings()
         settings.data_dir = tmp
-        settings.store.persist_path = str(Path(tmp) / "index")
+        # The WSGI app uses persist_path relative to cwd (data/index), not data_dir.
+        # Save to the same relative path the WSGI app will auto-load from.
+        settings.store.persist_path = "data/index"
         settings.observability.trace_sink = "none"
         settings.embedding.provider = "hashing"
         settings.generation.provider = "extractive"
@@ -141,7 +143,9 @@ def test_gunicorn_query_endpoint() -> None:
 
         settings = load_settings()
         settings.data_dir = tmp
-        settings.store.persist_path = str(Path(tmp) / "index")
+        # The WSGI app uses persist_path relative to cwd (data/index), not data_dir.
+        # Save to the same relative path the WSGI app will auto-load from.
+        settings.store.persist_path = "data/index"
         settings.observability.trace_sink = "none"
         settings.embedding.provider = "hashing"
         settings.generation.provider = "extractive"
