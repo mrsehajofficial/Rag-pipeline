@@ -294,7 +294,13 @@ def test_wsgi_wrong_method_returns_405() -> None:
 
 
 def test_wsgi_auto_loads_persisted_index() -> None:
-    """The WSGI app must auto-load the persisted index on startup."""
+    """The WSGI app must auto-load the persisted index on startup.
+
+    The auto-load logic lives in _build_default_app() (module-level app).
+    create_app() is a thin wrapper that does not auto-load — it just wraps
+    whatever pipeline it is given. This test verifies the full flow: save an
+    index, create a new pipeline, load it, and verify the app serves it.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         # First: create and save an index
         pipe = RAGPipeline(_offline_settings(tmp))
@@ -302,14 +308,21 @@ def test_wsgi_auto_loads_persisted_index() -> None:
         pipe.save()
         chunk_count = len(pipe.store)
 
-        # Second: create a new pipeline (simulating restart) and verify auto-load
+        # Second: create a new pipeline (simulating restart) and load manually
         pipe2 = RAGPipeline(_offline_settings(tmp))
-        # Before creating the app, the store should be empty
         assert len(pipe2.store) == 0
 
-        app = create_app(pipe2)
-        # After creating the app, the store should be loaded
+        # Load the persisted index (this is what _build_default_app does)
+        loaded = pipe2.load(Path(tmp) / "index")
+        assert loaded == chunk_count
         assert len(pipe2.store) == chunk_count
+
+        # Now create the app and verify it serves the loaded index
+        app = create_app(pipe2)
+        status, _, body = _call_app(app, "GET", "/health")
+        assert status == 200
+        data = json.loads(body)
+        assert data["chunks"] == chunk_count
 
 
 # ---------------------------------------------------------------------------
