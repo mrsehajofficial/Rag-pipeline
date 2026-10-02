@@ -12,7 +12,7 @@ dependencies = []  # zero-dependency core; see requirements-accelerated.txt
 [project.optional-dependencies]
 openai = ["openai>=1.30"]
 fast = ["numpy>=1.26"]
-dev = ["pytest>=8.0", "pytest-cov>=5.0", "numpy>=1.26"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "numpy>=1.26", "gunicorn>=21.0"]
 
 [project.scripts]
 rag = "ragpipe.cli:main"
