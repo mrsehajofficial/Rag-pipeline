@@ -1,0 +1,11 @@
+{"query": "how do we roll back a release?", "relevant": ["deployment.md"], "name": "rollback release"}
+{"query": "what triggers an automatic rollback?", "relevant": ["deployment.md"], "name": "rollback triggers"}
+{"query": "can we drop a column in the same release that stops using it?", "relevant": ["deployment.md"], "name": "destructive migration"}
+{"query": "why does the readiness probe need a warm pool?", "relevant": ["deployment.md"], "name": "readiness probe"}
+{"query": "how long should an API key live?", "relevant": ["authentication.md"], "name": "key lifetime"}
+{"query": "what order do we validate tokens in?", "relevant": ["authentication.md"], "name": "token validation order"}
+{"query": "what happens if a refresh token is replayed?", "relevant": ["authentication.md"], "name": "refresh replay"}
+{"query": "how do we rotate credentials without downtime?", "relevant": ["authentication.md"], "name": "zero-downtime rotation"}
+{"query": "what caused the export worker to crash?", "relevant": ["incident-2291.md"], "name": "root cause"}
+{"query": "how many jobs backed up during the incident?", "relevant": ["incident-2291.md"], "name": "impact size"}
+{"query": "which null-safety issue was missed during the refactor?", "relevant": ["incident-2291.md"], "name": "missed check"}

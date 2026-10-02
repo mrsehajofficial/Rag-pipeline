@@ -1,0 +1,28 @@
+# Core is pure stdlib -- installs and runs with zero third-party packages.
+# Everything below is OPTIONAL; add only what you need.
+
+# --- Local semantic embeddings (CPU, offline, no API key) ---
+# Recommended when your gateway serves chat models but no embedding model.
+# Downloads a ~90MB sentence-transformer ONNX model once, then works forever offline.
+onnxruntime>=1.17
+tokenizers>=0.15
+huggingface_hub>=0.23
+
+# --- OpenAI, or any OpenAI-compatible gateway (LiteLLM, vLLM, Ollama, ...) ---
+# Needed only if you use RAG_EMBED_PROVIDER=openai or RAG_LLM_PROVIDER=openai.
+openai>=1.30
+
+# --- Vectorized math: ~4x faster dense search (measured) ---
+numpy>=1.26
+
+# --- Tests ---
+pytest>=8.0
+
+# --- Optional: production vector store (swap in past ~500k chunks) ---
+# faiss-cpu>=1.8
+
+# --- Production WSGI server ---
+# Used by the Dockerfile CMD and `rag serve` when available.
+# Falls back to stdlib http.server if not installed.
+gunicorn>=21.0
+uvicorn>=0.23

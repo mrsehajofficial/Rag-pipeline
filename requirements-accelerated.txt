@@ -1,0 +1,6 @@
+# Everything, for production.
+pip install -r requirements.txt
+
+# Or selectively:
+#   Local embeddings only (no API):  onnxruntime tokenizers huggingface_hub numpy
+#   Gateway chat only:               openai numpy

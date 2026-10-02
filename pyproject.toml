@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-pipeline"
+version = "0.1.0"
+description = "Production-grade hybrid RAG pipeline: hybrid retrieval, RRF fusion, reranking, streaming answers."
+requires-python = ">=3.10"
+dependencies = []  # zero-dependency core; see requirements-accelerated.txt
+
+[project.optional-dependencies]
+openai = ["openai>=1.30"]
+fast = ["numpy>=1.26"]
+dev = ["pytest>=8.0", "numpy>=1.26"]
+
+[project.scripts]
+rag = "ragpipe.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

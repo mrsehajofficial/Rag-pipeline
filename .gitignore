@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/index/
+data/*.db
+data/traces.jsonl
+.pytest_cache/
+
+# Secrets — NEVER commit the real env file
+.env
+
+# Build / packaging artefacts
+*.egg-info/
+dist/
+build/
